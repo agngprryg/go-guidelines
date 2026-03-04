@@ -1,56 +1,55 @@
-package controllers
+package handlers
 
 import (
-	"encoding/json"
-	"mvc-gorm/models"
 	"mvc-gorm/repositories"
-	"net/http"
 	"strconv"
-	"time"
+
+	"github.com/gofiber/fiber/v2"
 )
 
-func GetCategory(w http.ResponseWriter, r *http.Request){
-	categories, err := repositories.GetCategory()
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
 
-	json.NewEncoder(w).Encode(categories)
+type CategoryHanlder struct {
+	repo *repositories.CategoryRepository
 }
 
-func GetCategoryByID(w http.ResponseWriter, r *http.Request){
-	idParams := r.URL.Query().Get("id")
+func NewCategoryHandler(repo *repositories.CategoryRepository)*CategoryHanlder{
+	return &CategoryHanlder{repo: repo}
+}
 
-	id, err := strconv.Atoi(idParams)
-	if err != nil {
-		http.Error(w, "product not found", http.StatusBadRequest)
-		return
-	}
-
-	category, err := repositories.GetCategoryByID(id)
+func (h *CategoryHanlder) GetAll(c *fiber.Ctx) error {
+	categories, err := h.repo.GetAll()
 	if err !=nil {
-		http.Error(w, "product not found", http.StatusBadRequest)
-		return
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"success" 	: false,
+			"message" 	: "fetching nya gagal bro coba cek lagi",
+			"error"		: err.Error(),
+		})
 	}
-
-	json.NewEncoder(w).Encode(category)
+	return c.JSON(fiber.Map{
+		"succes"	: true,
+		"data"		: categories,
+	})
 }
 
-func CreateCategory(w http.ResponseWriter, r *http.Request){
-	var category models.Category
-	json.NewDecoder(r.Body).Decode(&category)
-
-	category.CreatedAt = time.Now()
-	category.UpdatedAt = time.Now()
-
-	err:= repositories.CreateCategory(category)
-	if err !=nil{
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+func (h *CategoryHanlder) GetByID(c *fiber.Ctx) error {
+	id, err := strconv.ParseUint(c.Params("id"), 10,32)
+	if err != nil{
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"success" : false,
+			"message" : "Invalid ID",
+		})
 	}
-	json.NewEncoder(w).Encode(category)
+
+	category, err := h.repo.GetByID(uint(id))
+	if err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"success" : false,
+			"message" : "category gada blog !!",
+		})
+	}
+
+	return c.JSON(fiber.Map{
+		"success" : true,
+		"data" : category,
+	})
 }
-
-
-

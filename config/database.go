@@ -5,6 +5,8 @@ import (
 	"gorm.io/gorm"
 )
 
+var DB *gorm.DB
+
 func ConnectDB(){
 	dsn := "root:root@tcp(127.0.0.1:8889)/belajar-golang?parseTime=true"
 
@@ -13,5 +15,6 @@ func ConnectDB(){
 		panic(err)
 	}
 
+	DB = db
 	println("Berhasil connect ke database:", db)
 }
