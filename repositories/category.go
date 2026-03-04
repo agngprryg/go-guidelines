@@ -25,3 +25,24 @@ func (r *CategoryRepository) GetByID(id uint)(*models.Category, error){
 	result := r.db.Preload("Products").First(&Category, id)
 	return &Category, result.Error
 }
+
+func (r *CategoryRepository) Create(category *models.Category)error{
+	return r.db.Create(category).Error
+}
+
+func (r *CategoryRepository) Update(id uint, data map[string]interface{})(*models.Category, error){
+	var category models.Category
+	if err := r.db.First(&category, id).Error; err !=nil{
+		return nil, err
+	}
+
+	if err := r.db.Model(&category).Updates(data).Error;err !=nil{
+		return nil, err
+	}
+
+	return &category, nil
+}
+
+func (r *CategoryRepository) Delete(id uint) error {
+	return r.db.Delete(&models.Category{}, id).Error
+}

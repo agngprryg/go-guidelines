@@ -19,4 +19,7 @@ func RegisterRoutes(app *fiber.App){
 	category := api.Group("/categories")
 	category.Get("/", categoryHandler.GetAll)
 	category.Get("/:id", categoryHandler.GetByID)
+	category.Post("/", categoryHandler.Create)
+	category.Patch("/:id", categoryHandler.Update)
+	category.Delete("/:id", categoryHandler.Delete)
 }
